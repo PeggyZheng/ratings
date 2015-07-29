@@ -71,9 +71,31 @@ def show_user_details(user_id):
 @app.route('/movies/<int:movie_id>')
 def show_movie_details(movie_id):
     movie = Movie.query.get(movie_id)
-    score_and_title = db.session.query(Movie.title, Rating.score).join(Rating).filter(Rating.user_id==user_id).all()
+    ratings = movie.ratings
 
-    return render_template('user_profile.html', user=user, score_and_title=score_and_title)
+    return render_template('movie_profile.html', movie=movie, ratings=ratings)
+
+@app.route('/movies/<int:movie_id>/update-rating', methods=['POST'])
+def update_movie_rating(movie_id):
+
+    score = int(request.form.get('score'))
+    if session.get('loggedin', None):
+        user_id = session['loggedin']
+        has_rated = Rating.query.filter_by(user_id=user_id).first()
+        if has_rated:
+            has_rated.score = score
+        else:
+            movie_rating = Rating(movie_id=movie_id, user_id=user_id, score=score)
+            db.session.add(movie_rating)
+
+        db.session.commit()
+        flash('Your rating has been added/updated')
+
+        return redirect(url_for('show_movie_details', movie_id=movie_id))
+    else:
+        flash('You need to login first')
+        return redirect(url_for('index'))
+
 
 
 if __name__ == "__main__":
