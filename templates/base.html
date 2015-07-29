@@ -5,6 +5,7 @@
 </head>
 
 <body>
+
   {% with messages = get_flashed_messages() %}
   {% if messages %}
     <ul>
@@ -15,11 +16,17 @@
   {% endif %}
 {% endwith %}
 
+<!-- <input type="button" value="Logout" action="/logout"> -->
+
+<a href="/logout">log out</a>
   Ratings
   <hr>
+
+  <!-- {{ url_for('logout_user') }} -->
 
 
   {% block content %} put your content here {% endblock %}
 
 </body>
 </html>
+

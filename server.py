@@ -44,13 +44,36 @@ def login_user():
         db.session.commit()
         flash("New user has been added to database")
         session['loggedin'] = new_user.user_id
+    print "test", session
     return redirect(url_for('index'))
+
+@app.route('/logout')
+def logout_user():
+    session.pop('loggedin', None)
+    flash("You have logged out")
+    return redirect(url_for('index'))
+    
+
+@app.route('/users/<int:user_id>')
+def show_user_details(user_id):
+    print "line 58"
+    user = User.query.get(user_id)
+    print user
+    user_age = user.age
+    user_zipcode = user.zipcode
+    movie_score = db.session.query(User.user_id, Rating.score, Movie.title).join(Rating).join(Movie).filter(User.user_id==user_id)
+    print movie_score
+    movie_list = []
+    for user,rating, movie in movie_score.all():
+        movie_list.append((movie, rating))
+    return render_template('user_profile.html', user_id=user_id, user_age=user_age,\
+        user_zipcode=user_zipcode, movie_list=movie_list)
 
 
 if __name__ == "__main__":
     # We have to set debug=True here, since it has to be True at the point
     # that we invoke the DebugToolbarExtension
-    app.debug = False
+    app.debug = True
 
     connect_to_db(app)
 
