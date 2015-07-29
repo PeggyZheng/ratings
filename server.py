@@ -29,6 +29,12 @@ def user_list():
     users = User.query.all()
     return render_template("user_list.html", users=users)
 
+@app.route("/movies")
+def movie_list():
+    """Show list of movies."""
+    movies = Movie.query.order_by(Movie.title).all()
+    return render_template("movie_list.html", movies=movies)
+
 
 @app.route('/login', methods=['POST'])
 def login_user():
@@ -38,36 +44,36 @@ def login_user():
     if user:
         flash("Logged in")
         session['loggedin'] = user.user_id
+        return redirect(url_for('show_user_details', user_id=user.user_id))
     else:
         new_user = User(email=email, password=password)
         db.session.add(new_user)
         db.session.commit()
         flash("New user has been added to database")
         session['loggedin'] = new_user.user_id
-    print "test", session
-    return redirect(url_for('index'))
+        return redirect(url_for('show_user_details', user_id=new_user.user_id))
 
 @app.route('/logout')
 def logout_user():
     session.pop('loggedin', None)
+
     flash("You have logged out")
     return redirect(url_for('index'))
     
 
 @app.route('/users/<int:user_id>')
 def show_user_details(user_id):
-    print "line 58"
     user = User.query.get(user_id)
-    print user
-    user_age = user.age
-    user_zipcode = user.zipcode
-    movie_score = db.session.query(User.user_id, Rating.score, Movie.title).join(Rating).join(Movie).filter(User.user_id==user_id)
-    print movie_score
-    movie_list = []
-    for user,rating, movie in movie_score.all():
-        movie_list.append((movie, rating))
-    return render_template('user_profile.html', user_id=user_id, user_age=user_age,\
-        user_zipcode=user_zipcode, movie_list=movie_list)
+    score_and_title = db.session.query(Movie.title, Rating.score).join(Rating).filter(Rating.user_id==user_id).all()
+
+    return render_template('user_profile.html', user=user, score_and_title=score_and_title)
+
+@app.route('/movies/<int:movie_id>')
+def show_movie_details(movie_id):
+    movie = Movie.query.get(movie_id)
+    score_and_title = db.session.query(Movie.title, Rating.score).join(Rating).filter(Rating.user_id==user_id).all()
+
+    return render_template('user_profile.html', user=user, score_and_title=score_and_title)
 
 
 if __name__ == "__main__":
