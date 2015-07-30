@@ -67,7 +67,7 @@ def logout_user():
 def show_user_details(user_id):
     """show the details of the users, include its user id, age, zipcode and movies that they rate"""
     user = User.query.get(user_id)
-    score_and_title = db.session.query(Movie.movie_id, Movie.title, Rating.score).join(Rating).filter(Rating.user_id==user_id).all()
+    score_and_title = db.session.query(Movie.movie_id, Movie.title, Rating.score).join(Rating).filter(Rating.user_id==user_id).order_by(Movie.title).all()
     return render_template('user_profile.html', user=user, score_and_title=score_and_title)
 
 @app.route('/movies/<int:movie_id>')
@@ -77,7 +77,43 @@ def show_movie_details(movie_id):
     movie = Movie.query.get(movie_id)
     ratings = movie.ratings
 
-    return render_template('movie_profile.html', movie=movie, ratings=ratings)
+
+
+    user_id = session.get("loggedin")
+
+    if user_id:
+        user_rating = Rating.query.filter_by(
+            movie_id=movie_id, user_id=user_id).first()
+
+    else:
+        user_rating = None
+
+    # Get average rating of movie
+
+    rating_scores = [r.score for r in movie.ratings]
+    avg_rating = float(sum(rating_scores)) / len(rating_scores)
+
+    prediction = None
+
+    # Prediction code: only predict if the user hasn't rated it.
+    print "user id is", user_id
+    if user_id:
+        user = User.query.get(user_id)
+        print "user is", user
+        if user:
+            print "this is where we generate prediction"
+            prediction = user.predict_rating(movie)
+    print "This is a test to see prediction", prediction
+
+    return render_template(
+        "movie_profile.html",
+        movie=movie,
+        user_rating=user_rating,
+        average=avg_rating,
+        prediction=prediction,
+        ratings=ratings
+        )
+
 
 @app.route('/movies/<int:movie_id>', methods=['POST'])
 def update_movie_rating(movie_id):

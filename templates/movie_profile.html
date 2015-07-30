@@ -5,6 +5,11 @@
 
     <h2>{{movie.title}}</h2>
 
+    <p>Average rating: {{ average }}</p>
+        {% if prediction %}
+            <p>We predict you will rate this movie {{ prediction }}.</p>
+        {% endif %}
+
     <form action="/movies/{{ movie.movie_id }}" method='post'>
       Rate this movie: <select name='score'>
         <option value="1">1</option>
