@@ -38,6 +38,7 @@ def movie_list():
 
 @app.route('/login', methods=['POST'])
 def login_user():
+    """login page for user"""
     email = request.form.get('email')
     password = request.form.get('password')
     user = User.query.filter_by(email=email, password=password).first()
@@ -55,6 +56,7 @@ def login_user():
 
 @app.route('/logout')
 def logout_user():
+    """Log out the user; remove the user from the session and flash a notificatio message"""
     session.pop('loggedin', None)
 
     flash("You have logged out")
@@ -63,25 +65,27 @@ def logout_user():
 
 @app.route('/users/<int:user_id>')
 def show_user_details(user_id):
+    """show the details of the users, include its user id, age, zipcode and movies that they rate"""
     user = User.query.get(user_id)
-    score_and_title = db.session.query(Movie.title, Rating.score).join(Rating).filter(Rating.user_id==user_id).all()
-
+    score_and_title = db.session.query(Movie.movie_id, Movie.title, Rating.score).join(Rating).filter(Rating.user_id==user_id).all()
     return render_template('user_profile.html', user=user, score_and_title=score_and_title)
 
 @app.route('/movies/<int:movie_id>')
 def show_movie_details(movie_id):
+    """show the details of the movies that include the a dropdown menu that allows the users to 
+    update/add their ratings and show the all the ratings for that specific movie"""
     movie = Movie.query.get(movie_id)
     ratings = movie.ratings
 
     return render_template('movie_profile.html', movie=movie, ratings=ratings)
 
-@app.route('/movies/<int:movie_id>/update-rating', methods=['POST'])
+@app.route('/movies/<int:movie_id>', methods=['POST'])
 def update_movie_rating(movie_id):
-
+    """update the ratings for a particular movie and particular users and update the db"""
     score = int(request.form.get('score'))
     if session.get('loggedin', None):
         user_id = session['loggedin']
-        has_rated = Rating.query.filter_by(user_id=user_id).first()
+        has_rated = Rating.query.filter_by(user_id=user_id, movie_id=movie_id).first()
         if has_rated:
             has_rated.score = score
         else:

@@ -8,8 +8,8 @@
     <h3>Ratings</h3>
     </ul>
     <ul>
-    {% for movie, rating in score_and_title %}
-        <li>{{ movie}}: {{ rating}}</li>
+    {% for id, movie, rating in score_and_title %}
+        <li><a href="/movies/{{id}}">{{ movie}}</a>: {{ rating}}</li>
     {% endfor %}
     </ul>
 
