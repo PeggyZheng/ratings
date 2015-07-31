@@ -9,6 +9,7 @@
         {% if prediction %}
             <p>We predict you will rate this movie {{ prediction }}.</p>
         {% endif %}
+    <p>{{ beratement }}</p>
 
     <form action="/movies/{{ movie.movie_id }}" method='post'>
       Rate this movie: <select name='score'>
